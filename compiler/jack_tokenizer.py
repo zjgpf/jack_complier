@@ -91,7 +91,9 @@ def tokenize_line(line):
         if line[p_cur] in SYMBOLS:
             if p_cur > p_start:
                 token = line[p_start:p_cur]
-                if len(re.findall(IDENTIFIER_PATTERN,token)) == 1:
+                if token in KEYWORDS:
+                    tokens += [[token,KEYWORD]]
+                elif len(re.findall(IDENTIFIER_PATTERN,token)) == 1:
                     tokens += [[token,IDENTIFIER]]
                 elif len(re.findall(INTEGER_PATTERN,token)) == 1:
                     tokens += [[token,INTEGER]]
