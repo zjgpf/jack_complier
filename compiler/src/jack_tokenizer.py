@@ -142,13 +142,13 @@ def tokenize_line(line):
     return tokens
 
 def batch_test():
-    for jack_path,target_path in [  ['../test/ArrayTest/Main.jack', '../test/array_main_actual.xml'],
-                                    ['../test/Square/Main.jack', '../test/square_main_actual.xml'],
-                                    ['../test/Square/Square.jack', '../test/square_actual.xml'],
-                                    ['../test/Square/SquareGame.jack', '../test/square_game_actual.xml'],
-                                    ['../test/ExpressionLessSquare/Main.jack', '../test/exp_main_actual.xml'],
-                                    ['../test/ExpressionLessSquare/Square.jack', '../test/exp_actual.xml'],
-                                    ['../test/ExpressionLessSquare/SquareGame.jack', '../test/exp_game_actual.xml']
+    for jack_path,target_path in [  ['../test/ArrayTest/Main.jack', '../test/token_test/array_main_actual.xml'],
+                                    ['../test/Square/Main.jack', '../test/token_test/square_main_actual.xml'],
+                                    ['../test/Square/Square.jack', '../test/token_test/square_actual.xml'],
+                                    ['../test/Square/SquareGame.jack', '../test/token_test/square_game_actual.xml'],
+                                    ['../test/ExpressionLessSquare/Main.jack', '../test/token_test/exp_main_actual.xml'],
+                                    ['../test/ExpressionLessSquare/Square.jack', '../test/token_test/exp_actual.xml'],
+                                    ['../test/ExpressionLessSquare/SquareGame.jack', '../test/token_test/exp_game_actual.xml']
                                 ]:
         print(jack_path)
         print(target_path)
