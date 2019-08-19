@@ -101,6 +101,9 @@ def tokenize_line(line):
             token = line[p_cur]
             if token == '>': token = '&gt;'
             elif token == '<': token = '&lt;'
+            elif token == '"': token = '&quot;'
+            elif token == '&': token = '&amp;'
+            elif token == '/' and line[p_cur+1] == '/': break
             tokens += [[token, SYMBOL]]
             p_cur+=1
             p_start = p_cur
@@ -142,8 +145,25 @@ def tokenize_line(line):
     
 if __name__ == '__main__':
     JACKPATH='../test/ArrayTest/Main.jack'
-    TARGETPATH = '../test/array_actual.xml'
+    TARGETPATH = '../test/array_main_actual.xml'
+
     JACKPATH='../test/Square/Main.jack'
+    TARGETPATH = '../test/square_main_actual.xml'
+
+    JACKPATH='../test/Square/Square.jack'
     TARGETPATH = '../test/square_actual.xml'
+
+    JACKPATH='../test/Square/SquareGame.jack'
+    TARGETPATH = '../test/square_game_actual.xml'
+
+    JACKPATH='../test/ExpressionLessSquare/Main.jack'
+    TARGETPATH = '../test/exp_main_actual.xml'
+
+    JACKPATH='../test/ExpressionLessSquare/Square.jack'
+    TARGETPATH = '../test/exp_actual.xml'
+
+    JACKPATH='../test/ExpressionLessSquare/SquareGame.jack'
+    TARGETPATH = '../test/exp_game_actual.xml'
+
     generate_token_XML(JACKPATH, TARGETPATH)
     #print(tokenize_line('var Array a;'))
