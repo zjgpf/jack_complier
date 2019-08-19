@@ -141,29 +141,40 @@ def tokenize_line(line):
 
     return tokens
 
+def batch_test():
+    for jack_path,target_path in [  ['../test/ArrayTest/Main.jack', '../test/array_main_actual.xml'],
+                                    ['../test/Square/Main.jack', '../test/square_main_actual.xml'],
+                                    ['../test/Square/Square.jack', '../test/square_actual.xml'],
+                                    ['../test/Square/SquareGame.jack', '../test/square_game_actual.xml'],
+                                    ['../test/ExpressionLessSquare/Main.jack', '../test/exp_main_actual.xml'],
+                                    ['../test/ExpressionLessSquare/Square.jack', '../test/exp_actual.xml'],
+                                    ['../test/ExpressionLessSquare/SquareGame.jack', '../test/exp_game_actual.xml']
+                                ]:
+        print(jack_path)
+        print(target_path)
+        generate_token_XML(jack_path, target_path)
         
     
 if __name__ == '__main__':
-    JACKPATH='../test/ArrayTest/Main.jack'
-    TARGETPATH = '../test/array_main_actual.xml'
+    #JACKPATH='../test/ArrayTest/Main.jack'
+    #TARGETPATH = '../test/array_main_actual.xml'
 
-    JACKPATH='../test/Square/Main.jack'
-    TARGETPATH = '../test/square_main_actual.xml'
+    #JACKPATH='../test/Square/Main.jack'
+    #TARGETPATH = '../test/square_main_actual.xml'
 
-    JACKPATH='../test/Square/Square.jack'
-    TARGETPATH = '../test/square_actual.xml'
+    #JACKPATH='../test/Square/Square.jack'
+    #TARGETPATH = '../test/square_actual.xml'
 
-    JACKPATH='../test/Square/SquareGame.jack'
-    TARGETPATH = '../test/square_game_actual.xml'
+    #JACKPATH='../test/Square/SquareGame.jack'
+    #TARGETPATH = '../test/square_game_actual.xml'
 
-    JACKPATH='../test/ExpressionLessSquare/Main.jack'
-    TARGETPATH = '../test/exp_main_actual.xml'
+    #JACKPATH='../test/ExpressionLessSquare/Main.jack'
+    #TARGETPATH = '../test/exp_main_actual.xml'
 
-    JACKPATH='../test/ExpressionLessSquare/Square.jack'
-    TARGETPATH = '../test/exp_actual.xml'
+    #JACKPATH='../test/ExpressionLessSquare/Square.jack'
+    #TARGETPATH = '../test/exp_actual.xml'
 
-    JACKPATH='../test/ExpressionLessSquare/SquareGame.jack'
-    TARGETPATH = '../test/exp_game_actual.xml'
+    #JACKPATH='../test/ExpressionLessSquare/SquareGame.jack'
+    #TARGETPATH = '../test/exp_game_actual.xml'
 
-    generate_token_XML(JACKPATH, TARGETPATH)
-    #print(tokenize_line('var Array a;'))
+    batch_test()
