@@ -40,7 +40,7 @@ KEYWORDS = ['class' , 'constructor' , 'function' , 'method' ,
 SYMBOLS = ['{' , '}' , '(' , ')' , '[' , ']' , '.' , ',' , ';' , '+' , '-' , '*' ,
 '/' , '&' , '|' , '<' , '>' , '=' , '~']
 
-def jack_tokenizer(content):
+def tokenizer(content):
     tokens_all = []
     content_lines = content.split(NEXT_LINE)
     skip = False
@@ -60,22 +60,27 @@ def generate_token_XML(jack_path, target_path = 'jack.xml'):
     ret = '<tokens>'+NEXT_LINE
     with open(jack_path, 'r') as f:
         content = f.read()
-    tokens_all = jack_tokenizer(content)
+    tokens_all = tokenizer(content)
     for t in tokens_all:
         token,_type = t[0],t[1]
-        if _type == STRING:
-            ret = ret + STRING_START + ' ' + token + ' ' + STRING_CLOSE + NEXT_LINE
-        elif _type == INTEGER:
-            ret = ret + INTEGER_START+ ' ' + token + ' ' + INTEGER_CLOSE + NEXT_LINE
-        elif _type == KEYWORD:
-            ret = ret + KEYWORD_START+ ' ' + token + ' ' + KEYWORD_CLOSE + NEXT_LINE
-        elif _type == SYMBOL:
-            ret = ret + SYMBOL_START+ ' ' + token + ' ' + SYMBOL_CLOSE + NEXT_LINE
-        elif _type == IDENTIFIER:
-            ret = ret + IDENTIFIER_START+ ' ' + token + ' ' + IDENTIFIER_CLOSE + NEXT_LINE
+        ret += transfer_XML(token, _type)
     ret += '</tokens>'
     with open(target_path, 'w') as f:
         f.write(ret)
+
+def transfer_XML(token,_type):
+    ret = ''
+    if _type == STRING:
+        ret = STRING_START + ' ' + token + ' ' + STRING_CLOSE + NEXT_LINE
+    elif _type == INTEGER:
+        ret = INTEGER_START+ ' ' + token + ' ' + INTEGER_CLOSE + NEXT_LINE
+    elif _type == KEYWORD:
+        ret = KEYWORD_START+ ' ' + token + ' ' + KEYWORD_CLOSE + NEXT_LINE
+    elif _type == SYMBOL:
+        ret = SYMBOL_START+ ' ' + token + ' ' + SYMBOL_CLOSE + NEXT_LINE
+    elif _type == IDENTIFIER:
+        ret = IDENTIFIER_START+ ' ' + token + ' ' + IDENTIFIER_CLOSE + NEXT_LINE
+    return ret
         
         
 
