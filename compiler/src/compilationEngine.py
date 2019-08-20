@@ -1,6 +1,10 @@
 from tokenizer import tokenizer,transfer_XML,KEYWORDS,SYMBOLS
 import pdb
 
+OPS = ['+','-','*','/','&','|','<','>','=']    
+UNARYOPS = ['-','~']
+KEYWORDCONSTANTS = ['true','false','null','this']
+
 class CompilationEngine:
 
     def __init__(self, inputPath):
@@ -120,6 +124,7 @@ class CompilationEngine:
 
         while tokens[self.curIdx][0] == 'var': self.compileVarDec()
         
+        self.compileStatements()
         
         XMLArr += ['</subroutineBody>\n']
 
@@ -146,13 +151,51 @@ class CompilationEngine:
         self.consume(';','symbol')
 
         XMLArr += ['</varDec>\n']
-        pass
 
+    '''
+    statement*
+    statement: letStatement| ifStatement| whileStatement| doStatement| returnStatement
+    '''
     def compileStatements(self):
-        pass
+        XMLArr = self.XMLArr
+        tokens = self.tokens
 
+        XMLArr += ['<statements>\n']
+            
+        st = tokens[self.curIdx][0]
+        if st == 'let': self.compileLet()
+        elif st == 'if': self.compileIf()
+        elif st == 'while': self.compileWhile()
+        elif st == 'do': self.compileDo()
+        elif st == 'return': self.compileReturn()
+        else: raise Exception(f'Invalid statement {st}')
+
+        XMLArr += ['</statements>\n']
+        
+
+    '''
+    let varName('[' expression ']')?'='expression';'
+    '''
     def compileLet(self):
-        pass
+        XMLArr = self.XMLArr
+        tokens = self.tokens
+
+        XMLArr += ['<letStatement>\n']
+        
+        self.consume('let', 'keyword')
+
+        self.consume(e_type = 'identifier')
+
+        if tokens[self.curIdx][0] == '[':
+            self.consume('[','symbol')
+            self.compileExpression()
+            self.consume(']','symbol')
+
+        self.consume('=', 'symbol')
+        self.compileExpression()
+        #self.consume(';', 'symbol')
+
+        XMLArr += ['</letStatement>\n']
 
     def compileIf(self):
         pass
@@ -164,6 +207,58 @@ class CompilationEngine:
         pass
 
     def compileReturn(self):
+        pass
+
+    def compileExpression(self):
+        tokens = self.tokens
+        XMLArr = self.XMLArr
+
+        XMLArr += ['<expression>\n']
+
+        self.compileTerm()
+        
+        while tokens[self.curIdx][0] in OPS:
+            op = tokens[self.curIdx][0]
+            self.consume(op, 'symbol') 
+            self.compileTerm()
+
+        XMLArr += ['</expression>\n']
+
+    def compileTerm(self):
+        tokens = self.tokens
+        XMLArr = self.XMLArr
+
+        XMLArr += ['<term>\n']
+
+        cur_token,cur_type = tokens[self.curIdx][0],tokens[self.curIdx][1]
+        next_token = tokens[self.curIdx+1][0]
+
+        if next_token == '[':
+            self.consume(e_type = 'identifier')
+            self.consume('[','symbol')
+            self.compileExpression()
+            self.consume(']','symbol')
+        elif cur_token == '(':
+            self.consume('(','symbol')
+            self.compileExpression()
+            self.consume(')','symbol')
+        elif cur_token in UNARYOPS:
+            self.consume(cur_token, 'symbol')
+            self.compileTerm()
+        elif cur_type == 'identifier' and next_token in ['(','.']:
+            self.consume(e_type = 'identifier')
+            if next_token == '.':
+                self.consume('.','symbol')
+                self.consume(e_type = 'identifier')
+            self.consume('(','symbol')
+            self.compileExpressionList()
+            self.consume(')','symbol')
+        else:
+            self.consume()
+
+        XMLArr += ['</term>\n']
+
+    def compileExpressionList(self):
         pass
 
     def getAndVerify(self, idx, e_token = None, e_type = None):
