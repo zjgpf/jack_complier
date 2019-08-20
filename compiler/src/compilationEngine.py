@@ -4,6 +4,7 @@ import pdb
 OPS = ['+','-','*','/','&','|','<','>','=']    
 UNARYOPS = ['-','~']
 KEYWORDCONSTANTS = ['true','false','null','this']
+STATEMENTS = ['let','if','while','do','return']
 
 class CompilationEngine:
 
@@ -164,13 +165,13 @@ class CompilationEngine:
 
         XMLArr += ['<statements>\n']
             
-        st = tokens[self.curIdx][0]
-        if st == 'let': self.compileLet()
-        elif st == 'if': self.compileIf()
-        elif st == 'while': self.compileWhile()
-        elif st == 'do': self.compileDo()
-        elif st == 'return': self.compileReturn()
-        else: raise Exception(f'Invalid statement {st}')
+        while tokens[self.curIdx][0] in STATEMENTS:
+            st = tokens[self.curIdx][0]
+            if st == 'let': self.compileLet()
+            elif st == 'if': self.compileIf()
+            elif st == 'while': self.compileWhile()
+            elif st == 'do': self.compileDo()
+            elif st == 'return': self.compileReturn()
 
         XMLArr += ['</statements>\n']
         
@@ -266,10 +267,14 @@ class CompilationEngine:
         XMLArr = self.XMLArr
         tokens = self.tokens
 
+        XMLArr += ['<returnStatement>\n']
+
         self.consume('return','keyword')
         if tokens[self.curIdx][0] != ';':
             self.compileExpression()
         self.consume(';','symbol')
+
+        XMLArr += ['<returnStatement>\n']
 
     '''
     term (op term)*
