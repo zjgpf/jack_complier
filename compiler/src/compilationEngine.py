@@ -249,7 +249,7 @@ class CompilationEngine:
         self.compileStatements()
         self.consume('}','symbol')
 
-        XMLArr += ['/<whileStatement>\n']
+        XMLArr += ['</whileStatement>\n']
 
     '''
     'do' subroutineCall ';'

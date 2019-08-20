@@ -149,7 +149,7 @@
 </letStatement>
 </statements>
 <symbol> } </symbol>
-/<whileStatement>
+</whileStatement>
 <letStatement>
 <keyword> let </keyword>
 <identifier> i </identifier>
@@ -226,7 +226,7 @@
 </letStatement>
 </statements>
 <symbol> } </symbol>
-/<whileStatement>
+</whileStatement>
 <doStatement>
 <keyword> do </keyword>
 <identifier> Output </identifier>
