@@ -31,11 +31,13 @@ class CompilationEngine:
         while tokens[self.curIdx][0] == 'field' or tokens[self.curIdx][0] == 'static':
             self.compileClassVarDec()            
 
+        while tokens[self.curIdx][0] in ['constructor', 'function', 'method']:
+            self.compileSubroutineDec()
+
         XMLArr += ['</class>\n']
     
         self.printXML()
         
-        pass
 
 
     '''    
@@ -49,7 +51,7 @@ class CompilationEngine:
         
         self.consume(['static','field'],'keyword')
 
-        self.consume()
+        self.consume(e_type = ['keyword','identifier'])
 
         self.consume(e_type = 'identifier')
         
@@ -60,11 +62,48 @@ class CompilationEngine:
         self.consume(';','symbol')
         XMLArr += ['</classVarDec>\n']
 
-    def compileSubroutineDec(self):
-        pass
 
+    '''
+    ('constructor'|'function'|'method')('void'|type) subroutineName '(' parameterList ')' subroutineBody
+    constructor Square new(int Ax, int Ay, int Asize) 
+    '''
+    def compileSubroutineDec(self):
+        #tokens = self.tokens
+        XMLArr = self.XMLArr
+
+        XMLArr += ['<subroutineDec>\n']
+    
+        self.consume(['constructor', 'function', 'method'], 'keyword')
+        
+        self.consume(e_type = 'identifier')
+
+        self.consume(e_type = 'identifier')
+
+        self.consume('(','symbol')
+        
+        self.compileParameterList()
+
+        self.consume(')','symbol')
+
+        XMLArr += ['</subroutineDec>\n']
+
+
+    '''
+    ((type varName)(','type varName)*)?
+    '''
     def compileParameterList(self):
-        pass
+        tokens = self.tokens
+        XMLArr = self.XMLArr
+        
+        XMLArr += ['<parameterList>\n']
+
+        while tokens[self.curIdx][0] != ')':
+            self.consume(e_type = ['keyword','identifier'])
+            self.consume(e_type = ['identifier'])
+            if tokens[self.curIdx][0] == ',': self.consume(',','symbol')
+
+        XMLArr += ['</parameterList>\n']
+        
 
     def compileSubroutineBody(self):
         pass
@@ -97,7 +136,7 @@ class CompilationEngine:
             if type(e_token) is str: assert token == e_token
             elif type(e_token) is list:
                 if not token in e_token: raise Exception(f"token {token} not in {e_token}")
-        if e_type and type:
+        if e_type:
             if type(e_type) is str: assert _type == e_type
             elif type(e_type) is list:
                 if not _type in e_type: raise Exception(f"_type {_type} not in {e_type}")
@@ -110,7 +149,7 @@ class CompilationEngine:
 
     def printXML(self):
         for tag in self.XMLArr:
-            print(tag)
+            print(tag, end="")
         
 
 if __name__ == '__main__':
