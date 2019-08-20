@@ -125,6 +125,8 @@ class CompilationEngine:
         while tokens[self.curIdx][0] == 'var': self.compileVarDec()
         
         self.compileStatements()
+
+        #self.consume('}', 'symbol')
         
         XMLArr += ['</subroutineBody>\n']
 
@@ -197,18 +199,81 @@ class CompilationEngine:
 
         XMLArr += ['</letStatement>\n']
 
+    '''
+    'if' '(' expression ')' '{' statements '}' ('else' '{' statements '}')?
+    '''    
     def compileIf(self):
-        pass
+        XMLArr = self.XMLArr
+        tokens = self.tokens
 
+        XMLArr += ['<ifStatement>\n']
+        
+        self.consume('if', 'keyword')
+        self.consume('(', 'symbol')
+        self.compileExpression()   
+        self.consume(')', 'symbol')
+
+        self.consume('{', 'symbol')
+        self.compileStatements()
+        self.consume('}', 'symbol')
+
+        if tokens[self.curIdx][0] == 'else':
+            self.consume('else','keyword')
+            self.consume('{', 'symbol')
+            self.compileStatements
+            self.consume('}','symbol')
+
+        XMLArr += ['</ifStatement>\n']
+
+    '''
+    'while' '(' expression ')' '{' statements '}'
+    '''
     def compileWhile(self):
-        pass
+        XMLArr = self.XMLArr
+        
+        XMLArr += ['<whileStatement>\n']
 
+        self.consume('while','keyword')
+        self.consume('(','symbol')
+        self.compileExpression()
+        self.consume(')','symbol')
+
+        self.consume('{','symbol')
+        self.compileStatements()
+        self.consume('}','symbol')
+
+        XMLArr += ['/<whileStatement>\n']
+
+    '''
+    'do' subroutineCall ';'
+    '''
     def compileDo(self):
-        pass
+        XMLArr = self.XMLArr
+        
+        XMLArr += ['<doStatement>\n']
 
+        self.consume('do','keyword')
+        self.compileSubroutineCall()
+        self.consume(';','symbol')
+
+        XMLArr += ['</doStatement>\n']
+
+
+    '''
+    'return' expression?';'
+    '''
     def compileReturn(self):
-        pass
+        XMLArr = self.XMLArr
+        tokens = self.tokens
 
+        self.consume('return','keyword')
+        if tokens[self.curIdx][0] != ';':
+            self.compileExpression()
+        self.consume(';','symbol')
+
+    '''
+    term (op term)*
+    '''
     def compileExpression(self):
         tokens = self.tokens
         XMLArr = self.XMLArr
@@ -224,6 +289,9 @@ class CompilationEngine:
 
         XMLArr += ['</expression>\n']
 
+    '''
+    integerConstant|stringConstant|keywordConstant|varName|varName'['expression']'|subroutineCall|'('expression')'|unaryOp term
+    '''
     def compileTerm(self):
         tokens = self.tokens
         XMLArr = self.XMLArr
@@ -246,18 +314,15 @@ class CompilationEngine:
             self.consume(cur_token, 'symbol')
             self.compileTerm()
         elif cur_type == 'identifier' and next_token in ['(','.']:
-            self.consume(e_type = 'identifier')
-            if next_token == '.':
-                self.consume('.','symbol')
-                self.consume(e_type = 'identifier')
-            self.consume('(','symbol')
-            self.compileExpressionList()
-            self.consume(')','symbol')
+            self.compileSubroutineCall()
         else:
             self.consume()
 
         XMLArr += ['</term>\n']
 
+    '''
+    expression(','expression)*)?
+    '''
     def compileExpressionList(self):
         tokens = self.tokens
         XMLArr = self.XMLArr
@@ -271,6 +336,19 @@ class CompilationEngine:
                 self.compileExpression()
 
         XMLArr += ['</expressionList>\n']
+
+    '''
+    subroutineCall: subroutineName'('expressionList')'|(className|varName)'.'subroutineName'('expressionList')'
+    '''
+    def compileSubroutineCall(self):
+        tokens = self.tokens
+        self.consume(e_type = 'identifier')
+        if tokens[self.curIdx][0] == '.':
+            self.consume('.','symbol')
+            self.consume(e_type = 'identifier')
+        self.consume('(','symbol')
+        self.compileExpressionList()
+        self.consume(')','symbol')
 
     def getAndVerify(self, idx, e_token = None, e_type = None):
         tokens = self.tokens
