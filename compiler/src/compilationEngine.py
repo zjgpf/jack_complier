@@ -75,7 +75,7 @@ class CompilationEngine:
     
         self.consume(['constructor', 'function', 'method'], 'keyword')
         
-        self.consume(e_type = 'identifier')
+        self.consume(e_type = ['identifier', 'keyword'])
 
         self.consume(e_type = 'identifier')
 
@@ -84,6 +84,8 @@ class CompilationEngine:
         self.compileParameterList()
 
         self.consume(')','symbol')
+
+        self.compileSubroutineBody()
 
         XMLArr += ['</subroutineDec>\n']
 
@@ -105,10 +107,45 @@ class CompilationEngine:
         XMLArr += ['</parameterList>\n']
         
 
+    '''
+    '{' varDec* statements '}'
+    '''
     def compileSubroutineBody(self):
-        pass
+        XMLArr = self.XMLArr
+        tokens = self.tokens
+        
+        XMLArr += ['<subroutineBody>\n']
 
+        self.consume('{', 'symbol')
+
+        while tokens[self.curIdx][0] == 'var': self.compileVarDec()
+        
+        
+        XMLArr += ['</subroutineBody>\n']
+
+
+    '''
+    'var' type varName(','varName)*';'
+    '''
     def compileVarDec(self):
+        XMLArr = self.XMLArr
+        tokens = self.tokens
+
+        XMLArr += ['<varDec>\n']
+        
+        self.consume('var', 'keyword')
+
+        self.consume(e_type = ['identifier','keyword'])
+
+        self.consume(e_type = 'identifier')
+
+        while tokens[self.curIdx][0] != ';':
+            self.consume(',','symbol')
+            self.consume(e_type = 'identifier')
+
+        self.consume(';','symbol')
+
+        XMLArr += ['</varDec>\n']
         pass
 
     def compileStatements(self):
@@ -154,4 +191,5 @@ class CompilationEngine:
 
 if __name__ == '__main__':
     inputPath = '../test/Square/Square.jack'
+    inputPath = '../test/Square/Main.jack'
     ce = CompilationEngine(inputPath)
