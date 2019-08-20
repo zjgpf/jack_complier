@@ -127,7 +127,7 @@ class CompilationEngine:
         
         self.compileStatements()
 
-        #self.consume('}', 'symbol')
+        self.consume('}', 'symbol')
         
         XMLArr += ['</subroutineBody>\n']
 
@@ -221,7 +221,7 @@ class CompilationEngine:
         if tokens[self.curIdx][0] == 'else':
             self.consume('else','keyword')
             self.consume('{', 'symbol')
-            self.compileStatements
+            self.compileStatements()
             self.consume('}','symbol')
 
         XMLArr += ['</ifStatement>\n']
@@ -274,7 +274,7 @@ class CompilationEngine:
             self.compileExpression()
         self.consume(';','symbol')
 
-        XMLArr += ['<returnStatement>\n']
+        XMLArr += ['</returnStatement>\n']
 
     '''
     term (op term)*
@@ -361,7 +361,8 @@ class CompilationEngine:
         if e_token: 
             if type(e_token) is str: assert token == e_token
             elif type(e_token) is list:
-                if not token in e_token: raise Exception(f"token {token} not in {e_token}")
+                if not token in e_token: 
+                    raise Exception(f"token {token} not in {e_token}")
         if e_type:
             if type(e_type) is str: assert _type == e_type
             elif type(e_type) is list:
