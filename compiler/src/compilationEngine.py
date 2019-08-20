@@ -15,6 +15,12 @@ class CompilationEngine:
         self.curIdx = 0
         self.XMLArr = []
         self.compileClass()
+        self.XML = ''.join(self.XMLArr)
+
+    def writeXML(self,target_path = './out.xml'):
+        with open(target_path, 'w') as f:
+            f.write(self.XML)
+        
 
 
     '''
@@ -39,10 +45,10 @@ class CompilationEngine:
         while tokens[self.curIdx][0] in ['constructor', 'function', 'method']:
             self.compileSubroutineDec()
 
+        self.consume('}', 'symbol')
+
         XMLArr += ['</class>\n']
     
-        self.printXML()
-        
 
 
     '''    
@@ -380,6 +386,9 @@ class CompilationEngine:
         
 
 if __name__ == '__main__':
-    inputPath = '../test/Square/Square.jack'
+    #inputPath = '../test/Square/Square.jack'
+
     inputPath = '../test/Square/Main.jack'
+    targetPath = '../test/engine_test/square_main_actual.xml'
     ce = CompilationEngine(inputPath)
+    ce.writeXML(targetPath)
