@@ -1,7 +1,7 @@
-from tokenizer import tokenizer,transfer_XML,KEYWORDS,SYMBOLS
+from tokenizer import tokenizer,transfer_XML
 import pdb
 
-OPS = ['+','-','*','/','&','|','<','>','=']    
+OPS = ['+','-','*','/','&amp;','|','&lt;','&gt;','=']    
 UNARYOPS = ['-','~']
 KEYWORDCONSTANTS = ['true','false','null','this']
 STATEMENTS = ['let','if','while','do','return']
@@ -384,11 +384,29 @@ class CompilationEngine:
         for tag in self.XMLArr:
             print(tag, end="")
         
+def batch_test():
+    for jack_path,target_path in [  ['../test/ArrayTest/Main.jack', '../test/engine_test/array_main_actual.xml'],
+                                    ['../test/Square/Main.jack', '../test/engine_test/square_main_actual.xml'],
+                                    ['../test/Square/Square.jack', '../test/engine_test/square_actual.xml'],
+                                    ['../test/Square/SquareGame.jack', '../test/engine_test/square_game_actual.xml'],
+                                    ['../test/ExpressionLessSquare/Main.jack', '../test/engine_test/exp_main_actual.xml'],
+                                    ['../test/ExpressionLessSquare/Square.jack', '../test/engine_test/exp_actual.xml'],
+                                    ['../test/ExpressionLessSquare/SquareGame.jack', '../test/engine_test/exp_game_actual.xml']
+                                ]:
+        print(jack_path)
+        print(target_path)
+        CompilationEngine(jack_path).writeXML(target_path)
+        
 
 if __name__ == '__main__':
     #inputPath = '../test/Square/Square.jack'
 
-    inputPath = '../test/Square/Main.jack'
-    targetPath = '../test/engine_test/square_main_actual.xml'
-    ce = CompilationEngine(inputPath)
-    ce.writeXML(targetPath)
+    #inputPath = '../test/Square/Main.jack'
+    #targetPath = '../test/engine_test/square_main_actual.xml'
+    #ce = CompilationEngine(inputPath)
+    #ce.writeXML(targetPath)
+
+    #inputPath = '../test/ArrayTest/Main.jack'
+    #ce = CompilationEngine(inputPath)
+
+    batch_test()
