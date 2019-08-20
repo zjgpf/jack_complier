@@ -193,7 +193,7 @@ class CompilationEngine:
 
         self.consume('=', 'symbol')
         self.compileExpression()
-        #self.consume(';', 'symbol')
+        self.consume(';', 'symbol')
 
         XMLArr += ['</letStatement>\n']
 
@@ -259,7 +259,18 @@ class CompilationEngine:
         XMLArr += ['</term>\n']
 
     def compileExpressionList(self):
-        pass
+        tokens = self.tokens
+        XMLArr = self.XMLArr
+
+        XMLArr += ['<expressionList>\n']
+
+        if tokens[self.curIdx][0] != ')':
+            self.compileExpression()
+            while tokens[self.curIdx][0] != ')':
+                self.consume(',','symbol') 
+                self.compileExpression()
+
+        XMLArr += ['</expressionList>\n']
 
     def getAndVerify(self, idx, e_token = None, e_type = None):
         tokens = self.tokens
