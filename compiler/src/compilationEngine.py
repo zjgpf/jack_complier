@@ -33,6 +33,8 @@ class CompilationEngine:
         with open(target_path, 'w') as f:
             f.write(self.XML)
         
+    def treeToXml(self):
+        pass
 
 
     '''
@@ -95,22 +97,22 @@ class CompilationEngine:
     constructor Square new(int Ax, int Ay, int Asize) 
     '''
     def compileSubroutineDec(self, parentTree):
-        #tokens = self.tokens
         XMLArr = self.XMLArr
 
         XMLArr += ['<subroutineDec>\n']
+        node = Node(tag='subroutineDec',level=parentTree.level+1)
     
-        self.consume(['constructor', 'function', 'method'], 'keyword')
+        self.consume(['constructor', 'function', 'method'], 'keyword', tree = node)
         
-        self.consume(e_type = ['identifier', 'keyword'])
+        self.consume(e_type = ['identifier', 'keyword'], tree = node)
 
-        self.consume(e_type = 'identifier')
+        self.consume(e_type = 'identifier', tree = node)
 
-        self.consume('(','symbol')
+        self.consume('(','symbol', tree = node)
         
         self.compileParameterList()
 
-        self.consume(')','symbol')
+        self.consume(')','symbol', tree = node)
 
         self.compileSubroutineBody()
 
