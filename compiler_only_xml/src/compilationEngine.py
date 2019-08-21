@@ -6,17 +6,6 @@ UNARYOPS = ['-','~']
 KEYWORDCONSTANTS = ['true','false','null','this']
 STATEMENTS = ['let','if','while','do','return']
 
-class Node:
-    def __init__(self, tag='class', children=[], level=0, value='', category=None):
-        self.tag = tag
-        self.level = level
-        self.value = value
-        self.children = children
-        self.isTerminate = True if value else False
-
-    def __repr__(self):
-        return self.tag+':'+str(self.level)+':'+self.value+':'+str(self.isTerminate)
-
 class CompilationEngine:
 
     def __init__(self, inputPath):
@@ -25,7 +14,6 @@ class CompilationEngine:
         self.tokens = tokenizer(content)
         self.curIdx = 0
         self.XMLArr = []
-        self.tree = Node()
         self.compileClass()
         self.XML = ''.join(self.XMLArr)
 
@@ -41,25 +29,23 @@ class CompilationEngine:
     def compileClass(self):
         tokens = self.tokens
         XMLArr = self.XMLArr
-        tree = self.tree
 
         XMLArr += ['<class>\n']
         
-        
         #verify token is 'class' and type is keyword
-        self.consume('class', 'keyword', tree)
+        self.consume('class', 'keyword')
 
-        self.consume(e_type = 'identifier', tree = tree)
+        self.consume(e_type = 'identifier')
 
-        self.consume('{', 'symbol', tree = tree)
+        self.consume('{', 'symbol')
 
         while tokens[self.curIdx][0] == 'field' or tokens[self.curIdx][0] == 'static':
-            self.compileClassVarDec(tree)            
+            self.compileClassVarDec()            
 
         while tokens[self.curIdx][0] in ['constructor', 'function', 'method']:
-            self.compileSubroutineDec(tree)
+            self.compileSubroutineDec()
 
-        self.consume('}', 'symbol', tree = tree)
+        self.consume('}', 'symbol')
 
         XMLArr += ['</class>\n']
     
@@ -68,25 +54,23 @@ class CompilationEngine:
     '''    
     ('static'|'field')type varName(','varName)*';'
     '''
-    def compileClassVarDec(self, parentTree):
+    def compileClassVarDec(self):
         tokens = self.tokens
         XMLArr = self.XMLArr
 
         XMLArr += ['<classVarDec>\n']
-        node = Node(tag='classVarDec',level=parentTree.level+1)
-        parentTree.children += [node]
         
-        self.consume(['static','field'],'keyword',tree = node)
+        self.consume(['static','field'],'keyword')
 
-        self.consume(e_type = ['keyword','identifier'], tree= node)
+        self.consume(e_type = ['keyword','identifier'])
 
-        self.consume(e_type = 'identifier', tree = node)
+        self.consume(e_type = 'identifier')
         
         while tokens[self.curIdx][0] != ';':
-            self.consume(',','symbol', tree = node)
-            self.consume(e_type = 'identifier', tree = node)
+            self.consume(',','symbol')
+            self.consume(e_type = 'identifier')
 
-        self.consume(';','symbol', tree = node)
+        self.consume(';','symbol')
         XMLArr += ['</classVarDec>\n']
 
 
@@ -94,7 +78,7 @@ class CompilationEngine:
     ('constructor'|'function'|'method')('void'|type) subroutineName '(' parameterList ')' subroutineBody
     constructor Square new(int Ax, int Ay, int Asize) 
     '''
-    def compileSubroutineDec(self, parentTree):
+    def compileSubroutineDec(self):
         #tokens = self.tokens
         XMLArr = self.XMLArr
 
@@ -377,7 +361,7 @@ class CompilationEngine:
         self.compileExpressionList()
         self.consume(')','symbol')
 
-    def getAndVerify(self, idx, e_token = None, e_type = None, tree = None):
+    def getAndVerify(self, idx, e_token = None, e_type = None):
         tokens = self.tokens
         token,_type = tokens[idx][0], tokens[idx][1]
         if e_token: 
@@ -389,12 +373,10 @@ class CompilationEngine:
             if type(e_type) is str: assert _type == e_type
             elif type(e_type) is list:
                 if not _type in e_type: raise Exception(f"_type {_type} not in {e_type}")
-        if tree:
-            tree.children += [Node(tag = _type, value = token, level = tree.level+1)]
         return token,_type
     
-    def consume(self, e_token=None, e_type=None, tree = None):
-        token,_type = self.getAndVerify(self.curIdx, e_token, e_type, tree)
+    def consume(self, e_token=None, e_type=None):
+        token,_type = self.getAndVerify(self.curIdx, e_token, e_type)
         self.XMLArr += [transfer_XML(token, _type)]
         self.curIdx +=1
 
@@ -417,10 +399,14 @@ def batch_test():
         
 
 if __name__ == '__main__':
-    inputPath = '../test/Square/Square.jack'
+    #inputPath = '../test/Square/Square.jack'
 
-    ce = CompilationEngine(inputPath)
-    print(ce.tree.children)
-    
+    #inputPath = '../test/Square/Main.jack'
+    #targetPath = '../test/engine_test/square_main_actual.xml'
+    #ce = CompilationEngine(inputPath)
+    #ce.writeXML(targetPath)
 
-    #batch_test()
+    #inputPath = '../test/ArrayTest/Main.jack'
+    #ce = CompilationEngine(inputPath)
+
+    batch_test()
