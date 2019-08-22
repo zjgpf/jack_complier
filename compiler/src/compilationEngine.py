@@ -19,10 +19,8 @@ class Node:
 
 class CompilationEngine:
 
-    def __init__(self, inputPath):
-        with open(inputPath,'r') as f:
-            content = f.read()
-        self.tokens = tokenizer(content)
+    def __init__(self, tokens):
+        self.tokens = tokens
         self.curIdx = 0
         self.tree = Node()
         self.compileClass()
@@ -396,7 +394,10 @@ def batch_test():
                                 ]:
         print(jack_path)
         print(target_path)
-        CompilationEngine(jack_path).treeToXml(target_path)
+        with open(jack_path,'r') as f:
+            content = f.read()
+        tokens = tokenizer(content)
+        CompilationEngine(tokens).treeToXml(target_path)
         
 
 if __name__ == '__main__':

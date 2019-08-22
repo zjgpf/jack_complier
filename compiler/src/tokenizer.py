@@ -1,4 +1,3 @@
-import os
 import pdb
 import re
 
@@ -161,25 +160,4 @@ def batch_test():
         
     
 if __name__ == '__main__':
-    #JACKPATH='../test/ArrayTest/Main.jack'
-    #TARGETPATH = '../test/array_main_actual.xml'
-
-    #JACKPATH='../test/Square/Main.jack'
-    #TARGETPATH = '../test/square_main_actual.xml'
-
-    #JACKPATH='../test/Square/Square.jack'
-    #TARGETPATH = '../test/square_actual.xml'
-
-    #JACKPATH='../test/Square/SquareGame.jack'
-    #TARGETPATH = '../test/square_game_actual.xml'
-
-    #JACKPATH='../test/ExpressionLessSquare/Main.jack'
-    #TARGETPATH = '../test/exp_main_actual.xml'
-
-    #JACKPATH='../test/ExpressionLessSquare/Square.jack'
-    #TARGETPATH = '../test/exp_actual.xml'
-
-    #JACKPATH='../test/ExpressionLessSquare/SquareGame.jack'
-    #TARGETPATH = '../test/exp_game_actual.xml'
-
     batch_test()
