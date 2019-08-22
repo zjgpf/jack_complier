@@ -181,7 +181,7 @@ class CompilationEngine:
     '''
     'var' type varName(','varName)*';'
     '''
-    def compileVarDec(self, tree):
+    def compileVarDec(self, parentTree):
         XMLArr = self.XMLArr
         tokens = self.tokens
 
@@ -458,14 +458,15 @@ def batch_test():
                                 ]:
         print(jack_path)
         print(target_path)
-        CompilationEngine(jack_path).writeXML(target_path)
+        CompilationEngine(jack_path).treeToXml(target_path)
         
 
 if __name__ == '__main__':
-    inputPath = '../test/Square/Square.jack'
+    #inputPath = '../test/Square/Square.jack'
+    #targetPaht = '../test/engine_test/square_actual.xml'
 
-    ce = CompilationEngine(inputPath)
-    ce.treeToXml()
+    #ce = CompilationEngine(inputPath)
+    #ce.treeToXml(targetPaht)
     
 
-    #batch_test()
+    batch_test()
