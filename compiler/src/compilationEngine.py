@@ -6,7 +6,7 @@ UNARYOPS = ['-','~']
 KEYWORDCONSTANTS = ['true','false','null','this']
 STATEMENTS = ['let','if','while','do','return']
 
-class Node:
+class TreeNode:
     def __init__(self, tag='class', level=0, value='', category=None):
         self.tag = tag
         self.level = level
@@ -16,18 +16,29 @@ class Node:
 
     def __repr__(self):
         return self.tag+':'+str(self.level)+':'+self.value+':'+str(self.isTerminate)
+    
+    def show(self):
+        print(self)
+        print('*************************************')
+        for child in self.children:
+            child.show()
+
+class Symbol:
+    def __init__(self, name, _type, kind, index):
+        self.name = name
+        self._type = _type
+        self.kind = kind
+        self.index = index
+
 
 class CompilationEngine:
 
     def __init__(self, tokens):
         self.tokens = tokens
         self.curIdx = 0
-        self.tree = Node()
+        self.tree = TreeNode()
+        self.expressions = []
         self.compileClass()
-
-    def writeXML(self,target_path = './out.xml'):
-        with open(target_path, 'w') as f:
-            f.write(self.XML)
         
     def treeToXml(self, targetPath = './test.xml'):
         tree = self.tree
@@ -78,7 +89,7 @@ class CompilationEngine:
     def compileClassVarDec(self, parentTree):
         tokens = self.tokens
 
-        tree = Node(tag='classVarDec',level=parentTree.level+1)
+        tree = TreeNode(tag='classVarDec',level=parentTree.level+1)
         parentTree.children += [tree]
         
         self.consume(['static','field'],'keyword',tree = tree)
@@ -100,7 +111,7 @@ class CompilationEngine:
     '''
     def compileSubroutineDec(self, parentTree):
 
-        tree = Node(tag='subroutineDec',level=parentTree.level+1)
+        tree = TreeNode(tag='subroutineDec',level=parentTree.level+1)
         parentTree.children += [tree]
     
         self.consume(['constructor', 'function', 'method'], 'keyword', tree = tree)
@@ -125,7 +136,7 @@ class CompilationEngine:
     def compileParameterList(self, parentTree):
         tokens = self.tokens
         
-        tree = Node(tag='parameterList',level=parentTree.level+1)
+        tree = TreeNode(tag='parameterList',level=parentTree.level+1)
         parentTree.children += [tree]
 
         while tokens[self.curIdx][0] != ')':
@@ -139,7 +150,7 @@ class CompilationEngine:
     def compileSubroutineBody(self, parentTree):
         tokens = self.tokens
         
-        tree = Node(tag='subroutineBody',level=parentTree.level+1)
+        tree = TreeNode(tag='subroutineBody',level=parentTree.level+1)
         parentTree.children += [tree]
 
         self.consume('{', 'symbol', tree=tree)
@@ -157,7 +168,7 @@ class CompilationEngine:
     def compileVarDec(self, parentTree):
         tokens = self.tokens
 
-        tree = Node(tag='varDec',level=parentTree.level+1)
+        tree = TreeNode(tag='varDec',level=parentTree.level+1)
         parentTree.children += [tree]
         
         self.consume('var', 'keyword', tree=tree)
@@ -180,7 +191,7 @@ class CompilationEngine:
     def compileStatements(self, parentTree):
         tokens = self.tokens
 
-        tree = Node(tag='statements',level=parentTree.level+1)
+        tree = TreeNode(tag='statements',level=parentTree.level+1)
         parentTree.children += [tree]
             
         while tokens[self.curIdx][0] in STATEMENTS:
@@ -197,7 +208,7 @@ class CompilationEngine:
     def compileLet(self, parentTree):
         tokens = self.tokens
 
-        tree = Node(tag='letStatement',level=parentTree.level+1)
+        tree = TreeNode(tag='letStatement',level=parentTree.level+1)
         parentTree.children += [tree]
         
         self.consume('let', 'keyword', tree=tree)
@@ -220,7 +231,7 @@ class CompilationEngine:
     def compileIf(self, parentTree):
         tokens = self.tokens
 
-        tree = Node(tag='ifStatement',level=parentTree.level+1)
+        tree = TreeNode(tag='ifStatement',level=parentTree.level+1)
         parentTree.children += [tree]
         
         self.consume('if', 'keyword', tree=tree)
@@ -244,7 +255,7 @@ class CompilationEngine:
     '''
     def compileWhile(self, parentTree):
         
-        tree = Node(tag='whileStatement',level=parentTree.level+1)
+        tree = TreeNode(tag='whileStatement',level=parentTree.level+1)
         parentTree.children += [tree]
 
         self.consume('while','keyword', tree=tree)
@@ -262,7 +273,7 @@ class CompilationEngine:
     '''
     def compileDo(self, parentTree):
         
-        tree = Node(tag='doStatement',level=parentTree.level+1)
+        tree = TreeNode(tag='doStatement',level=parentTree.level+1)
         parentTree.children += [tree]
 
         self.consume('do','keyword', tree=tree)
@@ -276,7 +287,7 @@ class CompilationEngine:
     def compileReturn(self, parentTree):
         tokens = self.tokens
 
-        tree = Node(tag='returnStatement',level=parentTree.level+1)
+        tree = TreeNode(tag='returnStatement',level=parentTree.level+1)
         parentTree.children += [tree]
 
         self.consume('return','keyword', tree=tree)
@@ -291,7 +302,8 @@ class CompilationEngine:
     def compileExpression(self, parentTree):
         tokens = self.tokens
 
-        tree = Node(tag='expression',level=parentTree.level+1)
+        tree = TreeNode(tag='expression',level=parentTree.level+1)
+        self.expressions += [tree]
         parentTree.children += [tree]
 
         self.compileTerm(tree)
@@ -308,7 +320,7 @@ class CompilationEngine:
     def compileTerm(self, parentTree):
         tokens = self.tokens
 
-        tree = Node(tag='term',level=parentTree.level+1)
+        tree = TreeNode(tag='term',level=parentTree.level+1)
         parentTree.children += [tree]
 
         cur_token,cur_type = tokens[self.curIdx][0],tokens[self.curIdx][1]
@@ -338,7 +350,7 @@ class CompilationEngine:
     def compileExpressionList(self, parentTree):
         tokens = self.tokens
 
-        tree = Node(tag='expressionList',level=parentTree.level+1)
+        tree = TreeNode(tag='expressionList',level=parentTree.level+1)
         parentTree.children += [tree]
 
         if tokens[self.curIdx][0] != ')':
@@ -375,7 +387,7 @@ class CompilationEngine:
             elif type(e_type) is list:
                 if not _type in e_type: raise Exception(f"_type {_type} not in {e_type}")
         if tree:
-            tree.children += [Node(tag = _type, value = token, level = tree.level+1)]
+            tree.children += [TreeNode(tag = _type, value = token, level = tree.level+1)]
         return token,_type
     
     def consume(self, e_token=None, e_type=None, tree = None):
@@ -398,14 +410,18 @@ def batch_test():
             content = f.read()
         tokens = tokenizer(content)
         CompilationEngine(tokens).treeToXml(target_path)
+
+def single_test(jack_path):
+    with open(jack_path,'r') as f:
+        content = f.read()
+    tokens = tokenizer(content)
+    ce = CompilationEngine(tokens)
+    exps = ce.expressions
+    print(len(exps))
+    print(exps[0].show())
         
 
 if __name__ == '__main__':
-    #inputPath = '../test/Square/Square.jack'
-    #targetPaht = '../test/engine_test/square_actual.xml'
-
-    #ce = CompilationEngine(inputPath)
-    #ce.treeToXml(targetPaht)
-    
-
     batch_test()
+    #input_path = '../test/MyTest/test1.jack'
+    #single_test(input_path)
