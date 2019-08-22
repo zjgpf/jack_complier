@@ -7,11 +7,11 @@ KEYWORDCONSTANTS = ['true','false','null','this']
 STATEMENTS = ['let','if','while','do','return']
 
 class Node:
-    def __init__(self, tag='class', children=[], level=0, value='', category=None):
+    def __init__(self, tag='class', level=0, value='', category=None):
         self.tag = tag
         self.level = level
         self.value = value
-        self.children = children
+        self.children = []
         self.isTerminate = True if value else False
 
     def __repr__(self):
@@ -33,8 +33,25 @@ class CompilationEngine:
         with open(target_path, 'w') as f:
             f.write(self.XML)
         
-    def treeToXml(self):
-        pass
+    def treeToXml(self, targetPath = './test.xml'):
+        tree = self.tree
+        arr = []
+        self.treeToXmlHelper(tree, arr)
+        ret = ''.join(arr)
+        with open(targetPath,'w') as f:
+            f.write(ret)
+
+    def treeToXmlHelper(self, tree, arr):
+        if tree.isTerminate:
+            arr += [transfer_XML(tree.value, tree.tag)]
+        else:
+            tag = tree.tag
+            openTag = '<'+tag+'>\n'
+            closeTag = '</'+tag+'>\n'
+            arr+= [openTag]
+            for child in tree.children:
+                self.treeToXmlHelper(child, arr)
+            arr+=[closeTag]
 
 
     '''
@@ -75,20 +92,20 @@ class CompilationEngine:
         XMLArr = self.XMLArr
 
         XMLArr += ['<classVarDec>\n']
-        node = Node(tag='classVarDec',level=parentTree.level+1)
-        parentTree.children += [node]
+        tree = Node(tag='classVarDec',level=parentTree.level+1)
+        parentTree.children += [tree]
         
-        self.consume(['static','field'],'keyword',tree = node)
+        self.consume(['static','field'],'keyword',tree = tree)
 
-        self.consume(e_type = ['keyword','identifier'], tree= node)
+        self.consume(e_type = ['keyword','identifier'], tree= tree)
 
-        self.consume(e_type = 'identifier', tree = node)
+        self.consume(e_type = 'identifier', tree = tree)
         
         while tokens[self.curIdx][0] != ';':
-            self.consume(',','symbol', tree = node)
-            self.consume(e_type = 'identifier', tree = node)
+            self.consume(',','symbol', tree = tree)
+            self.consume(e_type = 'identifier', tree = tree)
 
-        self.consume(';','symbol', tree = node)
+        self.consume(';','symbol', tree = tree)
         XMLArr += ['</classVarDec>\n']
 
 
@@ -100,21 +117,22 @@ class CompilationEngine:
         XMLArr = self.XMLArr
 
         XMLArr += ['<subroutineDec>\n']
-        node = Node(tag='subroutineDec',level=parentTree.level+1)
+        tree = Node(tag='subroutineDec',level=parentTree.level+1)
+        parentTree.children += [tree]
     
-        self.consume(['constructor', 'function', 'method'], 'keyword', tree = node)
+        self.consume(['constructor', 'function', 'method'], 'keyword', tree = tree)
         
-        self.consume(e_type = ['identifier', 'keyword'], tree = node)
+        self.consume(e_type = ['identifier', 'keyword'], tree = tree)
 
-        self.consume(e_type = 'identifier', tree = node)
+        self.consume(e_type = 'identifier', tree = tree)
 
-        self.consume('(','symbol', tree = node)
+        self.consume('(','symbol', tree = tree)
         
-        self.compileParameterList()
+        self.compileParameterList(tree)
 
-        self.consume(')','symbol', tree = node)
+        self.consume(')','symbol', tree = tree)
 
-        self.compileSubroutineBody()
+        self.compileSubroutineBody(tree)
 
         XMLArr += ['</subroutineDec>\n']
 
@@ -122,16 +140,18 @@ class CompilationEngine:
     '''
     ((type varName)(','type varName)*)?
     '''
-    def compileParameterList(self):
+    def compileParameterList(self, parentTree):
         tokens = self.tokens
         XMLArr = self.XMLArr
         
         XMLArr += ['<parameterList>\n']
+        tree = Node(tag='parameterList',level=parentTree.level+1)
+        parentTree.children += [tree]
 
         while tokens[self.curIdx][0] != ')':
-            self.consume(e_type = ['keyword','identifier'])
-            self.consume(e_type = ['identifier'])
-            if tokens[self.curIdx][0] == ',': self.consume(',','symbol')
+            self.consume(e_type = ['keyword','identifier'], tree=tree)
+            self.consume(e_type = ['identifier'], tree = tree)
+            if tokens[self.curIdx][0] == ',': self.consume(',','symbol', tree=tree)
 
         XMLArr += ['</parameterList>\n']
         
@@ -139,19 +159,21 @@ class CompilationEngine:
     '''
     '{' varDec* statements '}'
     '''
-    def compileSubroutineBody(self):
+    def compileSubroutineBody(self, parentTree):
         XMLArr = self.XMLArr
         tokens = self.tokens
         
         XMLArr += ['<subroutineBody>\n']
+        tree = Node(tag='subroutineBody',level=parentTree.level+1)
+        parentTree.children += [tree]
 
-        self.consume('{', 'symbol')
+        self.consume('{', 'symbol', tree=tree)
 
-        while tokens[self.curIdx][0] == 'var': self.compileVarDec()
+        while tokens[self.curIdx][0] == 'var': self.compileVarDec(tree)
         
-        self.compileStatements()
+        self.compileStatements(tree)
 
-        self.consume('}', 'symbol')
+        self.consume('}', 'symbol', tree=tree)
         
         XMLArr += ['</subroutineBody>\n']
 
@@ -159,23 +181,25 @@ class CompilationEngine:
     '''
     'var' type varName(','varName)*';'
     '''
-    def compileVarDec(self):
+    def compileVarDec(self, tree):
         XMLArr = self.XMLArr
         tokens = self.tokens
 
         XMLArr += ['<varDec>\n']
+        tree = Node(tag='varDec',level=parentTree.level+1)
+        parentTree.children += [tree]
         
-        self.consume('var', 'keyword')
+        self.consume('var', 'keyword', tree=tree)
 
-        self.consume(e_type = ['identifier','keyword'])
+        self.consume(e_type = ['identifier','keyword'], tree=tree)
 
-        self.consume(e_type = 'identifier')
+        self.consume(e_type = 'identifier', tree=tree)
 
         while tokens[self.curIdx][0] != ';':
-            self.consume(',','symbol')
-            self.consume(e_type = 'identifier')
+            self.consume(',','symbol', tree=tree)
+            self.consume(e_type = 'identifier', tree=tree)
 
-        self.consume(';','symbol')
+        self.consume(';','symbol', tree=tree)
 
         XMLArr += ['</varDec>\n']
 
@@ -183,19 +207,21 @@ class CompilationEngine:
     statement*
     statement: letStatement| ifStatement| whileStatement| doStatement| returnStatement
     '''
-    def compileStatements(self):
+    def compileStatements(self, parentTree):
         XMLArr = self.XMLArr
         tokens = self.tokens
 
         XMLArr += ['<statements>\n']
+        tree = Node(tag='statements',level=parentTree.level+1)
+        parentTree.children += [tree]
             
         while tokens[self.curIdx][0] in STATEMENTS:
             st = tokens[self.curIdx][0]
-            if st == 'let': self.compileLet()
-            elif st == 'if': self.compileIf()
-            elif st == 'while': self.compileWhile()
-            elif st == 'do': self.compileDo()
-            elif st == 'return': self.compileReturn()
+            if st == 'let': self.compileLet(tree)
+            elif st == 'if': self.compileIf(tree)
+            elif st == 'while': self.compileWhile(tree)
+            elif st == 'do': self.compileDo(tree)
+            elif st == 'return': self.compileReturn(tree)
 
         XMLArr += ['</statements>\n']
         
@@ -203,83 +229,91 @@ class CompilationEngine:
     '''
     let varName('[' expression ']')?'='expression';'
     '''
-    def compileLet(self):
+    def compileLet(self, parentTree):
         XMLArr = self.XMLArr
         tokens = self.tokens
 
         XMLArr += ['<letStatement>\n']
+        tree = Node(tag='letStatement',level=parentTree.level+1)
+        parentTree.children += [tree]
         
-        self.consume('let', 'keyword')
+        self.consume('let', 'keyword', tree=tree)
 
-        self.consume(e_type = 'identifier')
+        self.consume(e_type = 'identifier', tree=tree)
 
         if tokens[self.curIdx][0] == '[':
-            self.consume('[','symbol')
-            self.compileExpression()
-            self.consume(']','symbol')
+            self.consume('[','symbol', tree=tree)
+            self.compileExpression(tree)
+            self.consume(']','symbol', tree=tree)
 
-        self.consume('=', 'symbol')
-        self.compileExpression()
-        self.consume(';', 'symbol')
+        self.consume('=', 'symbol', tree=tree)
+        self.compileExpression(tree)
+        self.consume(';', 'symbol', tree=tree)
 
         XMLArr += ['</letStatement>\n']
 
     '''
     'if' '(' expression ')' '{' statements '}' ('else' '{' statements '}')?
     '''    
-    def compileIf(self):
+    def compileIf(self, parentTree):
         XMLArr = self.XMLArr
         tokens = self.tokens
 
         XMLArr += ['<ifStatement>\n']
+        tree = Node(tag='ifStatement',level=parentTree.level+1)
+        parentTree.children += [tree]
         
-        self.consume('if', 'keyword')
-        self.consume('(', 'symbol')
-        self.compileExpression()   
-        self.consume(')', 'symbol')
+        self.consume('if', 'keyword', tree=tree)
+        self.consume('(', 'symbol', tree=tree)
+        self.compileExpression(tree)   
+        self.consume(')', 'symbol', tree=tree)
 
-        self.consume('{', 'symbol')
-        self.compileStatements()
-        self.consume('}', 'symbol')
+        self.consume('{', 'symbol', tree=tree)
+        self.compileStatements(tree)
+        self.consume('}', 'symbol', tree=tree)
 
         if tokens[self.curIdx][0] == 'else':
-            self.consume('else','keyword')
-            self.consume('{', 'symbol')
-            self.compileStatements()
-            self.consume('}','symbol')
+            self.consume('else','keyword', tree=tree)
+            self.consume('{', 'symbol', tree=tree)
+            self.compileStatements(tree)
+            self.consume('}','symbol', tree=tree)
 
         XMLArr += ['</ifStatement>\n']
 
     '''
     'while' '(' expression ')' '{' statements '}'
     '''
-    def compileWhile(self):
+    def compileWhile(self, parentTree):
         XMLArr = self.XMLArr
         
         XMLArr += ['<whileStatement>\n']
+        tree = Node(tag='whileStatement',level=parentTree.level+1)
+        parentTree.children += [tree]
 
-        self.consume('while','keyword')
-        self.consume('(','symbol')
-        self.compileExpression()
-        self.consume(')','symbol')
+        self.consume('while','keyword', tree=tree)
+        self.consume('(','symbol', tree=tree)
+        self.compileExpression(tree)
+        self.consume(')','symbol', tree=tree)
 
-        self.consume('{','symbol')
-        self.compileStatements()
-        self.consume('}','symbol')
+        self.consume('{','symbol', tree=tree)
+        self.compileStatements(tree)
+        self.consume('}','symbol', tree=tree)
 
         XMLArr += ['</whileStatement>\n']
 
     '''
     'do' subroutineCall ';'
     '''
-    def compileDo(self):
+    def compileDo(self, parentTree):
         XMLArr = self.XMLArr
         
         XMLArr += ['<doStatement>\n']
+        tree = Node(tag='doStatement',level=parentTree.level+1)
+        parentTree.children += [tree]
 
-        self.consume('do','keyword')
-        self.compileSubroutineCall()
-        self.consume(';','symbol')
+        self.consume('do','keyword', tree=tree)
+        self.compileSubroutineCall(tree)
+        self.consume(';','symbol', tree=tree)
 
         XMLArr += ['</doStatement>\n']
 
@@ -287,97 +321,106 @@ class CompilationEngine:
     '''
     'return' expression?';'
     '''
-    def compileReturn(self):
+    def compileReturn(self, parentTree):
         XMLArr = self.XMLArr
         tokens = self.tokens
 
         XMLArr += ['<returnStatement>\n']
+        tree = Node(tag='returnStatement',level=parentTree.level+1)
+        parentTree.children += [tree]
 
-        self.consume('return','keyword')
+        self.consume('return','keyword', tree=tree)
         if tokens[self.curIdx][0] != ';':
-            self.compileExpression()
-        self.consume(';','symbol')
+            self.compileExpression(tree)
+        self.consume(';','symbol', tree=tree)
 
         XMLArr += ['</returnStatement>\n']
 
     '''
     term (op term)*
     '''
-    def compileExpression(self):
+    def compileExpression(self, parentTree):
         tokens = self.tokens
         XMLArr = self.XMLArr
 
         XMLArr += ['<expression>\n']
+        tree = Node(tag='expression',level=parentTree.level+1)
+        parentTree.children += [tree]
 
-        self.compileTerm()
+        self.compileTerm(tree)
         
         while tokens[self.curIdx][0] in OPS:
             op = tokens[self.curIdx][0]
-            self.consume(op, 'symbol') 
-            self.compileTerm()
+            self.consume(op, 'symbol', tree=tree) 
+            self.compileTerm(tree)
 
         XMLArr += ['</expression>\n']
 
     '''
     integerConstant|stringConstant|keywordConstant|varName|varName'['expression']'|subroutineCall|'('expression')'|unaryOp term
     '''
-    def compileTerm(self):
+    def compileTerm(self, parentTree):
         tokens = self.tokens
         XMLArr = self.XMLArr
 
         XMLArr += ['<term>\n']
+        tree = Node(tag='term',level=parentTree.level+1)
+        parentTree.children += [tree]
 
         cur_token,cur_type = tokens[self.curIdx][0],tokens[self.curIdx][1]
         next_token = tokens[self.curIdx+1][0]
 
         if next_token == '[':
-            self.consume(e_type = 'identifier')
-            self.consume('[','symbol')
-            self.compileExpression()
-            self.consume(']','symbol')
+            self.consume(e_type = 'identifier',tree=tree)
+            self.consume('[','symbol',tree=tree)
+            self.compileExpression(tree)
+            self.consume(']','symbol',tree=tree)
         elif cur_token == '(':
-            self.consume('(','symbol')
-            self.compileExpression()
-            self.consume(')','symbol')
+            self.consume('(','symbol',tree=tree)
+            self.compileExpression(tree)
+            self.consume(')','symbol',tree=tree)
         elif cur_token in UNARYOPS:
-            self.consume(cur_token, 'symbol')
-            self.compileTerm()
+            self.consume(cur_token, 'symbol',tree=tree)
+            self.compileTerm(tree)
         elif cur_type == 'identifier' and next_token in ['(','.']:
-            self.compileSubroutineCall()
+            self.compileSubroutineCall(tree)
         else:
-            self.consume()
+            self.consume(tree=tree)
 
         XMLArr += ['</term>\n']
 
     '''
     expression(','expression)*)?
     '''
-    def compileExpressionList(self):
+    def compileExpressionList(self, parentTree):
         tokens = self.tokens
         XMLArr = self.XMLArr
 
         XMLArr += ['<expressionList>\n']
+        tree = Node(tag='expressionList',level=parentTree.level+1)
+        parentTree.children += [tree]
 
         if tokens[self.curIdx][0] != ')':
-            self.compileExpression()
+            self.compileExpression(tree)
             while tokens[self.curIdx][0] != ')':
-                self.consume(',','symbol') 
-                self.compileExpression()
+                self.consume(',','symbol',tree=tree) 
+                self.compileExpression(tree)
 
         XMLArr += ['</expressionList>\n']
 
     '''
     subroutineCall: subroutineName'('expressionList')'|(className|varName)'.'subroutineName'('expressionList')'
     '''
-    def compileSubroutineCall(self):
+    def compileSubroutineCall(self, parentTree):
         tokens = self.tokens
-        self.consume(e_type = 'identifier')
+        tree = parentTree
+        self.consume(e_type = 'identifier', tree=tree)
         if tokens[self.curIdx][0] == '.':
-            self.consume('.','symbol')
-            self.consume(e_type = 'identifier')
-        self.consume('(','symbol')
-        self.compileExpressionList()
-        self.consume(')','symbol')
+            self.consume('.','symbol', tree=tree)
+            self.consume(e_type = 'identifier', tree=tree)
+        self.consume('(','symbol', tree=tree)
+        self.compileExpressionList(tree)
+        self.consume(')','symbol', tree=tree)
 
     def getAndVerify(self, idx, e_token = None, e_type = None, tree = None):
         tokens = self.tokens
@@ -422,7 +465,7 @@ if __name__ == '__main__':
     inputPath = '../test/Square/Square.jack'
 
     ce = CompilationEngine(inputPath)
-    print(ce.tree.children)
+    ce.treeToXml()
     
 
     #batch_test()
